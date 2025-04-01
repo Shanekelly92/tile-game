@@ -9,15 +9,18 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
 
     fun set(xy: PointInt, cell: Cell) : Boolean{
         if (xy.x < array.width && xy.y < array.height) {
-            array[xy.x, xy.y] = cell
+//            if (array[xy.x, xy.y] is Cell.EmptyCell) array [xy.x, xy.y] = cell
+             array [xy.x, xy.y] = cell
             return true
         }
         return false
     }
 
-    fun updatePosition (oldPos : PointInt, newPos : PointInt, cell : Cell.TileCell){
-        if (set(newPos, cell)) set(oldPos, Cell.EmptyCell)
-
+    fun updatePosition (oldPos : PointInt, newPos : PointInt, cell : Cell.TileCell) : Boolean{
+        if (array[newPos.x, newPos.y] is Cell.EmptyCell){
+            if (set(newPos, cell)) return set(oldPos, Cell.EmptyCell)
+        }
+        return false;
     }
 
 
@@ -29,6 +32,14 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         fun xYToCellPos(xy : Point): PointInt {
             // adding 64 so that x+y represent center of tile
             return PointInt( ( (xy.x+64)/128).toInt(), ((xy.y+64)/128).toInt())
+        }
+        var words = HashSet<String>()
+        init {
+            words.add("DOG")
+        }
+
+        fun isWord(str: String) : Boolean{
+            return words.contains(str.uppercase())
         }
     }
 }

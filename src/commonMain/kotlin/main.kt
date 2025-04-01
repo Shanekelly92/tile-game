@@ -1,4 +1,5 @@
 import Board.Companion.cellPosToXY
+import Board.Companion.isWord
 import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
@@ -18,7 +19,8 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
 
 }
 
-class MyScene: PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
+class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
+
     override suspend fun SContainer.sceneMain() {
 
         val board = Board();
@@ -31,35 +33,25 @@ class MyScene: PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                 boardContainer.roundRect(Size(128, 128), RectCorners(5.0), fill = Colors.TAN).xy(128 * x, 128 * y).zIndex(-3f)
             }
         }
-
         val tileRack = roundRect(Size(128 * 7, 128), RectCorners(5.0), fill = Colors["#913812"]) {
             alignTopToBottomOf(boardContainer)
             alignLeftToLeftOf(boardContainer)
                 .zIndex(-1f)
         }
-        val tileSet = ArrayList<LetterTile>(7);
-
-
-
 
         fun Container.representBoard() {
-            println ("representing board")
-//            this.removeChildren()
             for (y in 0 until 8) {
                 for (x in 0 until 8){
                     val cell = board.get(x, y)
                     when (cell){
                         Cell.EmptyCell -> Unit
                         is Cell.TileCell -> {
-                            println("found a piece")
                             piecesContainer.addChild(cell.tile.xy( cellPosToXY(x,y) ))
                         }
                     }
                 }
             }
         }
-
-
 
         println("going to setup tiles now")
 
@@ -74,8 +66,30 @@ class MyScene: PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                     }
                     if (it.end){
                         println("setting piece from ${oldPos} to ${newPos}")
+                        if (!board.updatePosition(oldPos, newPos, Cell.TileCell(tile)) ) tile.xy(it.viewStartXY)
 
-                        board.updatePosition(oldPos, newPos, Cell.TileCell(tile))
+
+                        fun crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, str: String) : String{
+                            val cell = board.get(x+xChange, y+yChange)
+                            when (cell) {
+                                Cell.EmptyCell -> return str
+                                is Cell.TileCell -> {
+                                    var newStr = str;
+                                    val letter = cell.tile.letter
+                                    if (xChange < 0) newStr = "" + letter + str else newStr = str + letter //todo bad
+                                    return crawlContiguous(x+xChange, y+yChange, xChange, yChange, newStr)
+                                }
+                            }
+
+                        }
+
+
+                        val lettersLeft = crawlContiguous(newPos.x, newPos.y, -1, 0,"" + tile.letter.letter);
+                        val lettersRight = crawlContiguous(newPos.x, newPos.y, +1, 0,"");
+                        if (isWord(lettersLeft + lettersRight)) println("it's a word!")
+
+                        println("lettersLeft $lettersLeft")
+                        println("lettersRight $lettersRight")
 
                         piecesContainer.removeChildren()
                         piecesContainer.representBoard()
@@ -87,15 +101,19 @@ class MyScene: PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 
 
 
-
+        val tileSet = ArrayList<LetterTile>(7);
         tileSet.run{
-            for (i in 1 until 6){
-                add (createTile(Letter.nextLetter()))
-            }
+//            for (i in 1 until 6){
+//                add (createTile(Letter.nextLetter()))
+//            }
+            add (createTile(Letter.D))
+            add (createTile(Letter.G))
+            add (createTile(Letter.F))
+            add (createTile(Letter.O))
+            add (createTile(Letter.D))
         }
         for ((index, tile) in tileSet.withIndex()){
             tile.positionX(128 * index)
-
             this.addChild(tile)
             tile.zIndex(1000f)
             tile.alignTopToTopOf(tileRack)
@@ -111,5 +129,39 @@ class MyScene: PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
         piecesContainer.representBoard()
 
     }
+
+
+
+
 }
+
+
+
+//fun crawlContiguous(x : Int, y: Int, str: String ) : String{
+//    var nextStr = str
+//    if (str.isEmpty()) {
+//        val cell = board.get(x, y)
+//        when (cell){
+//            is Cell.TileCell -> return crawlContiguous(x -1, y, str)
+//            is Cell.EmptyCell -> {
+//                var prevCell =  board.get(x +1, y ) as Cell.TileCell
+//                nextStr = nextStr + prevCell.tile.letter.letter // i really need to sort out my type heirarchy
+//                return crawlContiguous(x+1, y, nextStr)
+//            }
+//        }
+//
+//    } else {
+//        val cell = board.get(x, y)
+//        var nextStr = str
+//        when (cell){
+//            is Cell.EmptyCell -> return str
+//            is Cell.TileCell -> {
+//                println("we're here with $nextStr");
+//                nextStr = nextStr + cell.tile.letter.letter
+//                return crawlContiguous(x+1, y, nextStr)
+//            }
+//        }
+//    }
+//
+//}
 

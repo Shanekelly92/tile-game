@@ -4,7 +4,7 @@ import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 import kotlin.random.*
 
-class LetterTile (letter : Letter) : Container() {
+class LetterTile (val letter : Letter) : Container() {
     val uniqueId : String
     init {
         uniqueId = "" + Random.nextInt()
