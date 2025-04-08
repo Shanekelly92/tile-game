@@ -1,6 +1,7 @@
 import korlibs.image.color.*
 import korlibs.korge.view.*
 import korlibs.korge.view.align.*
+import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
 import kotlin.random.*
 
@@ -15,6 +16,9 @@ class LetterTile (val letter : Letter) : Container() {
         ) {
             centerBetween(0.0f, 0.0f, 128f, 128f)
         }
+    }
+    override fun toString() :String {
+        return letter.letter.toString()
     }
 }
 
@@ -52,6 +56,7 @@ enum class Letter (val letter : Char) {
             return Letter.values().random()
         }
     }
+
 
 }
 

@@ -1,5 +1,8 @@
 import korlibs.datastructure.*
+import korlibs.korge.animate.*
+import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
+import korlibs.time.*
 
 
 class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
@@ -38,8 +41,24 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
             words.add("DOG")
         }
 
-        fun isWord(str: String) : Boolean{
-            return words.contains(str.uppercase())
+        fun isWord(list: List<LetterTile>) : Boolean{
+            val str = StringBuilder()
+            for (tile in list){
+                str.append(tile.letter.letter)
+            }
+            println("the cluster is: ${str.toString()}")
+            if( words.contains(str.toString().uppercase())){
+                for (tile in list) {
+                    val animator = tile.simpleAnimator
+                    animator.sequence {
+                        alpha(tile, 0.7)
+                        alpha(tile, 1)
+                    }
+//                    tile.filter =Convolute3Filter(Convolute3Filter.KERNEL_EDGE_DETECTION)
+                }
+                return true
+            }
+            return false;
         }
     }
 }

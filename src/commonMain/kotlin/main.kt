@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.korge.*
+import korlibs.korge.animate.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
@@ -20,10 +21,10 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
 }
 
 class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
+    val board = Board();
 
     override suspend fun SContainer.sceneMain() {
 
-        val board = Board();
         val placeHolderContainer = container{}
         val piecesContainer = container{}.zIndex(10000f)
         val boardContainer = container{}.zIndex(-1f)
@@ -38,6 +39,7 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
             alignLeftToLeftOf(boardContainer)
                 .zIndex(-1f)
         }
+
 
         fun Container.representBoard() {
             for (y in 0 until 8) {
@@ -67,29 +69,24 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                     if (it.end){
                         println("setting piece from ${oldPos} to ${newPos}")
                         if (!board.updatePosition(oldPos, newPos, Cell.TileCell(tile)) ) tile.xy(it.viewStartXY)
-
-
-                        fun crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, str: String) : String{
-                            val cell = board.get(x+xChange, y+yChange)
-                            when (cell) {
-                                Cell.EmptyCell -> return str
-                                is Cell.TileCell -> {
-                                    var newStr = str;
-                                    val letter = cell.tile.letter
-                                    if (xChange < 0) newStr = "" + letter + str else newStr = str + letter //todo bad
-                                    return crawlContiguous(x+xChange, y+yChange, xChange, yChange, newStr)
-                                }
-                            }
-
-                        }
-
-
-                        val lettersLeft = crawlContiguous(newPos.x, newPos.y, -1, 0,"" + tile.letter.letter);
-                        val lettersRight = crawlContiguous(newPos.x, newPos.y, +1, 0,"");
-                        if (isWord(lettersLeft + lettersRight)) println("it's a word!")
+                        // assume the current tile as part of the left/up branch
+                        val lettersLeft = board.crawlContiguous(newPos.x, newPos.y, -1, 0, arrayListOf(tile));
+                        val lettersRight = board.crawlContiguous(newPos.x, newPos.y, +1, 0, ArrayList());
+                        val lettersUp = board.crawlContiguous(newPos.x, newPos.y, 0, -1, arrayListOf(tile))
+                        val lettersDown = board.crawlContiguous(newPos.x, newPos.y, 0, +1, ArrayList())
 
                         println("lettersLeft $lettersLeft")
                         println("lettersRight $lettersRight")
+                        println("lettersUp $lettersUp")
+                        println("lettersDown $lettersDown")
+
+                        lettersLeft.addAll(lettersRight)
+                        lettersUp.addAll(lettersDown)
+
+                        if (isWord(lettersLeft)) {
+                            println("it's a word!")
+                        }
+                        if (isWord(lettersUp)) println("it's a word!")
 
                         piecesContainer.removeChildren()
                         piecesContainer.representBoard()
@@ -132,36 +129,21 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 
 
 
-
 }
 
-
-
-//fun crawlContiguous(x : Int, y: Int, str: String ) : String{
-//    var nextStr = str
-//    if (str.isEmpty()) {
-//        val cell = board.get(x, y)
-//        when (cell){
-//            is Cell.TileCell -> return crawlContiguous(x -1, y, str)
-//            is Cell.EmptyCell -> {
-//                var prevCell =  board.get(x +1, y ) as Cell.TileCell
-//                nextStr = nextStr + prevCell.tile.letter.letter // i really need to sort out my type heirarchy
-//                return crawlContiguous(x+1, y, nextStr)
-//            }
-//        }
-//
-//    } else {
-//        val cell = board.get(x, y)
-//        var nextStr = str
-//        when (cell){
-//            is Cell.EmptyCell -> return str
-//            is Cell.TileCell -> {
-//                println("we're here with $nextStr");
-//                nextStr = nextStr + cell.tile.letter.letter
-//                return crawlContiguous(x+1, y, nextStr)
-//            }
-//        }
-//    }
-//
-//}
-
+fun Board.crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, list: ArrayList<LetterTile>) : ArrayList<LetterTile>{ // this doesn't really need integer change values as its always 1, maybe booleans or enum better?
+    val nextX = x+ xChange
+    val nextY = y+yChange
+    if (nextX > 7 || nextY > 7) return list //todo setup proper variable board bound values, not hardcoded
+    val cell = this.get(x+xChange, y+yChange)
+    // need to add board boundary logic
+    when (cell) {
+        Cell.EmptyCell -> return list
+        is Cell.TileCell -> {
+//            var newList = list;
+//            val letter = cell.tile.letter
+            if (xChange < 0 || yChange < 0 ) list.add(0, cell.tile) else list.add(cell.tile)//todo this is pretty bad
+            return crawlContiguous(x+xChange, y+yChange, xChange, yChange, list)
+        }
+    }
+}
