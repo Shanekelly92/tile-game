@@ -69,16 +69,16 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                     if (it.end){
                         println("setting piece from ${oldPos} to ${newPos}")
                         if (!board.updatePosition(oldPos, newPos, Cell.TileCell(tile)) ) tile.xy(it.viewStartXY)
-                        // assume the current tile as part of the left/up branch
+
                         val lettersLeft = board.crawlContiguous(newPos.x, newPos.y, -1, 0, arrayListOf(tile));
                         val lettersRight = board.crawlContiguous(newPos.x, newPos.y, +1, 0, ArrayList());
                         val lettersUp = board.crawlContiguous(newPos.x, newPos.y, 0, -1, arrayListOf(tile))
                         val lettersDown = board.crawlContiguous(newPos.x, newPos.y, 0, +1, ArrayList())
 
-                        println("lettersLeft $lettersLeft")
-                        println("lettersRight $lettersRight")
-                        println("lettersUp $lettersUp")
-                        println("lettersDown $lettersDown")
+//                        println("lettersLeft $lettersLeft")
+//                        println("lettersRight $lettersRight")
+//                        println("lettersUp $lettersUp")
+//                        println("lettersDown $lettersDown")
 
                         lettersLeft.addAll(lettersRight)
                         lettersUp.addAll(lettersDown)
@@ -119,6 +119,7 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 
         fun createInitialBoardTiles(){
             var oTile = createTile(Letter.O)
+            oTile.moveable = false;
             board.set(PointInt(4,4), Cell.TileCell(oTile))
         }
 
