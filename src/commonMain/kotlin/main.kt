@@ -7,6 +7,7 @@ import korlibs.korge.*
 import korlibs.korge.animate.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
+import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.align.*
 import korlibs.math.geom.*
@@ -14,14 +15,14 @@ import korlibs.math.geom.slice.*
 import korlibs.memory.*
 
 suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors["#2b2b2b"]) {
-
     val sceneContainer = sceneContainer()
     sceneContainer.changeTo({ MyScene() })
-
 }
 
 class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
     val board = Board();
+
+
 
     override suspend fun SContainer.sceneMain() {
 
@@ -40,6 +41,11 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                 .zIndex(-1f)
         }
 
+        val turnButton = uiButton("Go!").size(Size(128, 128))
+            .alignLeftToRightOf(tileRack)
+            .alignTopToBottomOf(boardContainer)
+        turnButton.textSize = 70f
+
 
         fun Container.representBoard() {
             for (y in 0 until 8) {
@@ -54,8 +60,16 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                 }
             }
         }
+        val tileSet = LinkedHashSet<LetterTile>(7);
 
-        println("going to setup tiles now")
+        fun representTileRack() {
+            for ((index, tile) in tileSet.withIndex()) {
+                tile.positionX(128 * index)
+                this.addChild(tile)
+                tile.zIndex(1000f)
+                tile.alignTopToTopOf(tileRack)
+            }
+        }
 
         fun createTile(letter: Letter) : LetterTile {
             val tile = LetterTile(letter)
@@ -63,22 +77,25 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                 tile.draggable {
                     val newPos = Board.xYToCellPos(it.viewNextXY)
                     val oldPos = Board.xYToCellPos(it.viewStartXY)
-                    if (it.start){
-                        println("starting drag" + tile.uniqueId)
-                    }
+//                    if (it.start){
+//                        println("starting drag" + tile.uniqueId)
+//                    }
                     if (it.end){
                         println("setting piece from ${oldPos} to ${newPos}")
-                        if (!board.updatePosition(oldPos, newPos, Cell.TileCell(tile)) ) tile.xy(it.viewStartXY)
+                        if (!board.updatePosition(oldPos, newPos, Cell.TileCell(tile)) )
+                            tile.xy(it.viewStartXY
+                            )
+                        else {
+                            tileSet.remove(tile)
+                            tileSet.add(createTile(Letter.nextLetter()))
+                            representTileRack()
+                        }
 
                         val lettersLeft = board.crawlContiguous(newPos.x, newPos.y, -1, 0, arrayListOf(tile));
                         val lettersRight = board.crawlContiguous(newPos.x, newPos.y, +1, 0, ArrayList());
                         val lettersUp = board.crawlContiguous(newPos.x, newPos.y, 0, -1, arrayListOf(tile))
                         val lettersDown = board.crawlContiguous(newPos.x, newPos.y, 0, +1, ArrayList())
 
-//                        println("lettersLeft $lettersLeft")
-//                        println("lettersRight $lettersRight")
-//                        println("lettersUp $lettersUp")
-//                        println("lettersDown $lettersDown")
 
                         lettersLeft.addAll(lettersRight)
                         lettersUp.addAll(lettersDown)
@@ -98,7 +115,6 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 
 
 
-        val tileSet = ArrayList<LetterTile>(7);
         tileSet.run{
 //            for (i in 1 until 6){
 //                add (createTile(Letter.nextLetter()))
@@ -109,12 +125,9 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
             add (createTile(Letter.O))
             add (createTile(Letter.D))
         }
-        for ((index, tile) in tileSet.withIndex()){
-            tile.positionX(128 * index)
-            this.addChild(tile)
-            tile.zIndex(1000f)
-            tile.alignTopToTopOf(tileRack)
-        }
+
+
+        representTileRack()
 
 
         fun createInitialBoardTiles(){
@@ -127,9 +140,6 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
         piecesContainer.representBoard()
 
     }
-
-
-
 }
 
 fun Board.crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, list: ArrayList<LetterTile>) : ArrayList<LetterTile>{ // this doesn't really need integer change values as its always 1, maybe booleans or enum better?
@@ -141,8 +151,6 @@ fun Board.crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, list: ArrayL
     when (cell) {
         Cell.EmptyCell -> return list
         is Cell.TileCell -> {
-//            var newList = list;
-//            val letter = cell.tile.letter
             if (xChange < 0 || yChange < 0 ) list.add(0, cell.tile) else list.add(cell.tile)//todo this is pretty bad
             return crawlContiguous(x+xChange, y+yChange, xChange, yChange, list)
         }

@@ -53,7 +53,7 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
             for (tile in list){
                 str.append(tile.letter.letter)
             }
-            println("the cluster is: ${str.toString()}")
+//            println("the cluster is: ${str.toString()}")
             if( words.contains(str.toString().uppercase())){
                 for (tile in list) {
                     val animator = tile.simpleAnimator
