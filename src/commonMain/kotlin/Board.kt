@@ -66,6 +66,13 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         }
     }
 
+    fun isPotentialWord(tilesOnBoard: List<Cell>, tilesInRack: List<Cell>): Boolean {
+        return false;
+    }
+
+    fun testCreatePotentialWordRegex(tilesOnBoard: List<Cell>, tilesInRack: List<Cell>): String {
+        return ""
+    }
 
 
     companion object {

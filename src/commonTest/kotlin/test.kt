@@ -8,6 +8,68 @@ import korlibs.math.geom.*
 import kotlin.test.*
 
 class MyTest : ViewsForTesting() {
+
+    fun createCells( letters: String) : List<Cell>{
+        var output = ArrayList<Cell.TileCell>()
+
+        for (x in letters){
+            output.add(Cell.TileCell(LetterTile(Letter.valueOf(x.toString()))))
+        }
+        return output
+    }
+
+    @Test
+    fun testIsPotentialWord_basic_first_part_of_DOG_happy(){
+        val tilesOnBoard = createCells("DO")
+        val tilesInRack = createCells("GVC")
+        val underTest = Board()
+
+        val output =  underTest.isPotentialWord(tilesOnBoard, tilesInRack)
+        assertTrue(output)
+    }
+
+    fun testIsPotentialWord_basic_middle_of_FOOD_happy(){
+        val tilesOnBoard = createCells("OO")
+        val tilesInRack = createCells("DCF")
+        val underTest = Board()
+
+        val output =  underTest.isPotentialWord(tilesOnBoard, tilesInRack)
+        assertTrue(output)
+    }
+
+    @Test
+    fun testIsPotentialWord_gaps_with_DOG_happy(){
+        val tilesOnBoard = createCells("D_G")
+        val tilesInRack = createCells("GVC")
+        val underTest = Board()
+
+        val output =  underTest.isPotentialWord(tilesOnBoard, tilesInRack)
+        assertTrue(output)
+    }
+
+    @Test
+    fun testCreatePotentialWordRegex(){
+        val tilesOnBoard = createCells("DO")
+        val tilesInRack = createCells("GVC")
+
+        val underTest = Board()
+
+        val output =  underTest.testCreatePotentialWordRegex(tilesOnBoard, tilesInRack)
+        assertEquals("[GCV]*DO[GCV]*", output)
+    }
+
+//    fun testCreatePotentialWordRegex(){
+//        val tilesOnBoard = ArrayList<LetterTile>()
+//        val tilesInRack = arrayListOf(LetterTile(Letter.G), LetterTile(Letter.C), LetterTile(Letter.V))
+//
+//        val underTest = Board()
+//
+//        val output =  underTest.testCreatePotentialWordRegex(tilesOnBoard, tilesInRack)
+//        assertEquals("[GCV]*DO[GCV]*", output)
+//    }
+
+
+
     @Test
     fun test() = viewsTest {
         val log = arrayListOf<String>()

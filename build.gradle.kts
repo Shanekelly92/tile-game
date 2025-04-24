@@ -28,6 +28,7 @@ korge {
 
 dependencies {
     add("commonMainApi", project(":deps"))
+    jvmTestImplementation(kotlin("test"))
     //add("commonMainApi", project(":korge-dragonbones"))
 }
 
