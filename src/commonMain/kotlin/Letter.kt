@@ -9,6 +9,7 @@ class LetterTile (val letter : Letter) : Container() {
     val uniqueId : String
     val rect : RoundRect
     var moveable = true
+    var boardPos = PointInt(-1, -1)
     init {
         uniqueId = "" + Random.nextInt()
         rect =roundRect(Size(128, 128), RectCorners(5.0), fill = Colors.WHITESMOKE)

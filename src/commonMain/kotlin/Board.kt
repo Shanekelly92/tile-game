@@ -27,9 +27,9 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         return false;
     }
 
-    fun getCompleteWordIfExists(pos: PointInt, tile: LetterTile): ArrayList<LetterTile>? {
-
-        val clusters = getClusters(pos, tile)
+    fun getCompleteWordIfExists(tile: LetterTile?): ArrayList<LetterTile>? {
+        tile ?: return null
+        val clusters = getClusters(tile)
         if (isWord(clusters.first)) {
             return clusters.first
         }
@@ -39,11 +39,13 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         return null
     }
 
-    fun getClusters(pos: PointInt, tile : LetterTile) : Pair<ArrayList<LetterTile>, ArrayList<LetterTile>>{
-        val lettersLeft = crawlContiguous(pos.x, pos.y, -1, 0, arrayListOf(tile));
-        val lettersRight = crawlContiguous(pos.x, pos.y, +1, 0, ArrayList());
-        val lettersUp = crawlContiguous(pos.x, pos.y, 0, -1, arrayListOf(tile))
-        val lettersDown = crawlContiguous(pos.x, pos.y, 0, +1, ArrayList())
+    fun getClusters( tile : LetterTile) : Pair<ArrayList<LetterTile>, ArrayList<LetterTile>>{
+        val posx = tile.boardPos.x
+        val posy = tile.boardPos.y // todo: pos should really be pointInt, need to get straight
+        val lettersLeft = crawlContiguous(posx, posy, -1, 0, arrayListOf(tile));
+        val lettersRight = crawlContiguous(posx, posy, +1, 0, ArrayList());
+        val lettersUp = crawlContiguous(posx, posy, 0, -1, arrayListOf(tile))
+        val lettersDown = crawlContiguous(posx, posy, 0, +1, ArrayList())
 
         lettersLeft.addAll(lettersRight)
         lettersUp.addAll(lettersDown)
@@ -72,6 +74,11 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
 
     fun testCreatePotentialWordRegex(tilesOnBoard: List<Cell>, tilesInRack: List<Cell>): String {
         return ""
+    }
+
+    fun isNewWordAndLegal(lastPositionPlaced : PointInt?) : Boolean {
+        lastPositionPlaced ?: return false; //todo this shouldn't really be neccessary why is lastPositionPlaced nullable
+        return false
     }
 
 
