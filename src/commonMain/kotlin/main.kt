@@ -78,7 +78,7 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 //                            representTileRack()
                         }
 
-                        val completeWord = board.getCompleteWordIfExists(tile)
+//                        val completeWord = board.getCompleteWordIfExists(tile)
 
                         piecesContainer.removeChildren()
                         piecesContainer.representBoard()

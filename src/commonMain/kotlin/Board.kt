@@ -29,17 +29,22 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
 
     fun getCompleteWordIfExists(tile: LetterTile?): ArrayList<LetterTile>? {
         tile ?: return null
-        val clusters = getClusters(tile)
-        if (isWord(clusters.first)) {
-            return clusters.first
+        val clusters = getClusters(tile) // clusters around that tile, up and down
+        var allClusters = HashSet<ArrayList<LetterTile>>() // all clusters adjacent to tiles in initial clusters
+        for (cluster in clusters) {
+            for (tile in cluster){
+                allClusters.addAll(getClusters(tile));
+            }
         }
-        if (isWord(clusters.second)) {
-            return clusters.second
+
+        for (cluster in allClusters){
+            if(!isWord(cluster)) return null
         }
-        return null
+
+        return clusters.first() // maybe return all in cluster and 'animate' those
     }
 
-    fun getClusters( tile : LetterTile) : Pair<ArrayList<LetterTile>, ArrayList<LetterTile>>{
+    fun getClusters( tile : LetterTile) : Set<ArrayList<LetterTile>>{
         val posx = tile.boardPos.x
         val posy = tile.boardPos.y // todo: pos should really be pointInt, need to get straight
         val lettersLeft = crawlContiguous(posx, posy, -1, 0, arrayListOf(tile));
@@ -49,13 +54,13 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
 
         lettersLeft.addAll(lettersRight)
         lettersUp.addAll(lettersDown)
-        return lettersLeft to lettersUp
+        return setOf(lettersLeft,lettersUp)
 
     }
 
     fun crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, list: ArrayList<LetterTile>) : ArrayList<LetterTile>{ // this doesn't really need integer change values as its always 1, maybe booleans or enum better?
-        val nextX = x+ xChange
-        val nextY = y+yChange
+        val nextX = x + xChange
+        val nextY = y + yChange
         if (nextX > 7 || nextY > 7) return list //todo setup proper variable board bound values, not hardcoded
         val cell = get(x+xChange, y+yChange)
         // need to add board boundary logic
