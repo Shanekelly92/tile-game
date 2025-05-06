@@ -4,6 +4,7 @@ import korlibs.math.geom.*
 
 class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
     fun get(x: Int, y: Int): Cell {
+//        println("getting board piece: x = $x y = $y")
         return array[x, y]
     }
 
@@ -27,7 +28,7 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         return false;
     }
 
-    fun getCompleteWordIfExists(tile: LetterTile?): ArrayList<LetterTile>? {
+    fun getCompleteWordsIfTheyExist(tile: LetterTile?): Set<ArrayList<LetterTile>>? {
         tile ?: return null
         val clusters = getClusters(tile) // clusters around that tile, up and down
         var allClusters = HashSet<ArrayList<LetterTile>>() // all clusters adjacent to tiles in initial clusters
@@ -38,10 +39,10 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
         }
 
         for (cluster in allClusters){
-            if(!isWord(cluster)) return null
+            if(cluster.size>1 && !isWord(cluster)) return null
         }
 
-        return clusters.first() // maybe return all in cluster and 'animate' those
+        return clusters // maybe return all in cluster and 'animate' those
     }
 
     fun getClusters( tile : LetterTile) : Set<ArrayList<LetterTile>>{
@@ -61,8 +62,9 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
     fun crawlContiguous(x: Int, y:Int, xChange:Int, yChange: Int, list: ArrayList<LetterTile>) : ArrayList<LetterTile>{ // this doesn't really need integer change values as its always 1, maybe booleans or enum better?
         val nextX = x + xChange
         val nextY = y + yChange
+
         if (nextX > 7 || nextY > 7) return list //todo setup proper variable board bound values, not hardcoded
-        val cell = get(x+xChange, y+yChange)
+        val cell = get(nextX, nextY)
         // need to add board boundary logic
         when (cell) {
             Cell.EmptyCell -> return list

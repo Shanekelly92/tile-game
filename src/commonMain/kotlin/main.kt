@@ -112,6 +112,7 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
 
         var oTile = createTile(Letter.O)
         board.set(PointInt(4,4), Cell.TileCell(oTile))
+        oTile.boardPos=PointInt(4,4)
 
         piecesContainer.representBoard()
 
@@ -121,8 +122,8 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
         turnButton.textSize = 70f
 
         turnButton.onPress{
-            var completeWord = board.getCompleteWordIfExists(lastTilePlaced);
-            if (completeWord == null) {
+            val completeWords = board.getCompleteWordsIfTheyExist(lastTilePlaced);
+            if (completeWords == null) {
                 for (tile in tilesInTurn){
                     tileSet.add(tile)
                     tile.moveable = true
@@ -132,14 +133,18 @@ class MyScene(): PixelatedScene(128 *8, 128 * 9, sceneSmoothing = true){
                     board.set(pos, Cell.EmptyCell)
                 }
             }
-            completeWord?.forEach {
-                val animator = it.simpleAnimator
-                animator.sequence {
-                    alpha(it, 0.7)
-                    alpha(it, 1)
+            completeWords?.iterator()?.forEach {
+                it.forEach {
+                    val animator = it.simpleAnimator
+                    animator.sequence {
+                        alpha(it, 0.7)
+                        alpha(it, 1)
+                    }
+                    it.rect.color=Colors.BEIGE
                 }
-                it.rect.color=Colors.BEIGE
             }
+
+
             tilesInTurn.clear()
             posInTurn.clear()
             representBoard()
