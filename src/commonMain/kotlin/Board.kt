@@ -1,5 +1,10 @@
 import korlibs.datastructure.*
+import korlibs.io.file.VfsFile
+import korlibs.io.lang.Charset
 import korlibs.math.geom.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
@@ -98,19 +103,21 @@ class Board (val array: Array2<Cell> = Array2<Cell>(8, 8){Cell.EmptyCell}) {
             // adding 64 so that x+y represent center of tile
             return PointInt( ( (xy.x+64)/128).toInt(), ((xy.y+64)/128).toInt())
         }
-        var words = HashSet<String>()
-        init {
-            words.add("DOG")
-            words.add("FOOD")
-        }
+        lateinit var  words:Set<String>
 
+        init {
+            words = emptySet() // Default initialization
+            CoroutineScope(Dispatchers.Default).launch {
+                words = readDictionary()
+            }
+        }
         fun isWord(list: List<LetterTile>) : Boolean{
             val str = StringBuilder()
             for (tile in list){
                 str.append(tile.letter.letter)
             }
             println("the cluster is: ${str.toString()}")
-            if( words.contains(str.toString().uppercase())){
+            if( words.contains(str.toString().lowercase())){
                 for (tile in list) {
 //                    val animator = tile.simpleAnimator
 //                    animator.sequence {
@@ -135,6 +142,11 @@ sealed interface Cell {
     data class TileCell(val tile: LetterTile) : Cell
 }
 
+suspend fun readDictionary() : Set<String> {
+    var file : VfsFile = KR.`5000Words`.__file
+    val words = file.readLines(Charset.forName("UTF-8")).map { it.trim() }
+    return words.toSet()
 
+}
 
 
