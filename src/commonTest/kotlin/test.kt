@@ -103,4 +103,13 @@ class MyTest : ViewsForTesting() {
         assertNull(output)
 
     }
+
+    @Test
+    fun testGetNewViableTile_wordNotInWordsDictionary_throwException() {
+        val currentWord = "sfsdfvsdfvsfvsvf"
+        val currentTiles = setOf('f','x', 'x', 'x', 'm', 'x') // tiles can make 'freedom' Not enough space to make 'do' or 'doorway'
+        assertFailsWith<IllegalStateException> { // todo: make better exception
+            underTest.findViableNextLetters(currentWord, currentTiles)
+        }
+    }
 }
